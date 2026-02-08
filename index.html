@@ -119,7 +119,7 @@ const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
 
 function moveNoSafely() {
-    const margin = 20;
+    const margin = 20; // safe space from edges
 
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
@@ -127,12 +127,14 @@ function moveNoSafely() {
     const maxX = window.innerWidth - btnWidth - margin;
     const maxY = window.innerHeight - btnHeight - margin;
 
+    // Random position
     const x = Math.random() * maxX;
     const y = Math.random() * maxY;
 
-    noBtn.style.position = "fixed";
-    noBtn.style.left = Math.max(margin, x) + "px";
-    noBtn.style.top = Math.max(margin, y) + "px";
+    // Make sure it's visible
+    noBtn.style.position = "absolute"; // use absolute instead of fixed
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
 }
 
 /* Trigger on ANY attempt */
@@ -144,6 +146,7 @@ function moveNoSafely() {
 yesBtn.onclick = () => {
     window.location.href = "love.html";
 };
+
 
 /* Floating hearts */
 setInterval(() => {
