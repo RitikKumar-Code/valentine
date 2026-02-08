@@ -97,11 +97,7 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: fixed; /* fixed for viewport roaming */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
+    position: relative; /* relative for proper alignment */
     transition: left 0.2s ease, top 0.2s ease;
 }
 
@@ -125,54 +121,33 @@ button {
 <script>
 const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
+const btnContainer = document.querySelector(".buttons");
 
-const margin = 10; // distance from edges
+const margin = 5; // safe margin inside container
 
 // YES button click
 yesBtn.onclick = () => {
     window.location.href = "love.html";
 };
 
-// Function to move No button away from mouse/touch
-function moveNoAway(mouseX, mouseY) {
+// Function to move No button randomly inside container when hovered/clicked
+function moveNoRandomly() {
+    const containerRect = btnContainer.getBoundingClientRect();
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
-    // Button center
-    const btnX = noBtn.offsetLeft + btnWidth / 2;
-    const btnY = noBtn.offsetTop + btnHeight / 2;
+    // Random new position within container
+    let newX = Math.random() * (containerRect.width - btnWidth - margin*2);
+    let newY = Math.random() * (containerRect.height - btnHeight - margin*2);
 
-    const dx = btnX - mouseX;
-    const dy = btnY - mouseY;
-    const distance = Math.sqrt(dx*dx + dy*dy);
-
-    const escapeDistance = 120; // distance to trigger movement
-    if(distance < escapeDistance) {
-        // Move in opposite direction
-        let newX = noBtn.offsetLeft + (dx/distance) * 200;
-        let newY = noBtn.offsetTop + (dy/distance) * 200;
-
-        // Clamp inside viewport
-        newX = Math.min(Math.max(margin, newX), window.innerWidth - btnWidth - margin);
-        newY = Math.min(Math.max(margin, newY), window.innerHeight - btnHeight - margin);
-
-        noBtn.style.left = newX + "px";
-        noBtn.style.top = newY + "px";
-    }
+    noBtn.style.position = "absolute";
+    noBtn.style.left = newX + "px";
+    noBtn.style.top = newY + "px";
 }
 
-// Mouse and touch events
-document.addEventListener("mousemove", e => moveNoAway(e.clientX, e.clientY));
-document.addEventListener("touchmove", e => moveNoAway(e.touches[0].clientX, e.touches[0].clientY));
-
-// Random initial position
-function randomizeNoBtn() {
-    const btnWidth = noBtn.offsetWidth;
-    const btnHeight = noBtn.offsetHeight;
-    noBtn.style.left = Math.random() * (window.innerWidth - btnWidth - margin) + "px";
-    noBtn.style.top = Math.random() * (window.innerHeight - btnHeight - margin) + "px";
-}
-randomizeNoBtn();
+// Event listeners: hover and click triggers the No button to move
+noBtn.addEventListener("mouseenter", moveNoRandomly);
+noBtn.addEventListener("click", moveNoRandomly);
 
 // Floating hearts
 setInterval(() => {
