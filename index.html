@@ -8,17 +8,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    margin: 0;
     height: 100vh;
-    overflow: hidden;
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #ff6a88, #ff99ac);
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    position: relative;
 }
 
 /* Floating hearts */
@@ -94,7 +94,9 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: relative; /* start aligned */
+    position: relative; /* initial position */
+    transition: left 0.3s ease, top 0.3s ease; /* smooth movement */
+    z-index: 1000;
 }
 
 /* Mobile tweak */
@@ -119,34 +121,31 @@ const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
 
 function moveNoSafely() {
-    const margin = 20; // safe space from edges
-
+    const margin = 10; // safe distance from edges
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
     const maxX = window.innerWidth - btnWidth - margin;
     const maxY = window.innerHeight - btnHeight - margin;
 
-    // Random position
+    // Random position inside viewport
     const x = Math.random() * maxX;
     const y = Math.random() * maxY;
 
-    // Make sure it's visible
-    noBtn.style.position = "absolute"; // use absolute instead of fixed
+    noBtn.style.position = "fixed";
     noBtn.style.left = x + "px";
     noBtn.style.top = y + "px";
 }
 
-/* Trigger on ANY attempt */
+/* Trigger movement on hover, click, or touch */
 ["mouseenter", "mousedown", "touchstart"].forEach(evt => {
     noBtn.addEventListener(evt, moveNoSafely);
 });
 
-/* YES click */
+/* YES button click */
 yesBtn.onclick = () => {
     window.location.href = "love.html";
 };
-
 
 /* Floating hearts */
 setInterval(() => {
