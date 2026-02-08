@@ -94,8 +94,8 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: relative; /* initial position */
-    transition: left 0.3s ease, top 0.3s ease; /* smooth movement */
+    position: fixed; /* relative to viewport */
+    transition: left 0.2s ease, top 0.2s ease; /* smooth movement */
     z-index: 1000;
 }
 
@@ -120,34 +120,63 @@ button {
 const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
 
-function moveNoSafely() {
-    const margin = 10; // safe distance from edges
+const margin = 10; // safe distance from screen edges
+
+// Initialize No button at center
+noBtn.style.left = "50%";
+noBtn.style.top = "50%";
+noBtn.style.transform = "translate(-50%, -50%)";
+
+// YES click
+yesBtn.onclick = () => {
+    window.location.href = "love.html";
+};
+
+// Function to move No button away from mouse
+function moveNoAway(mouseX, mouseY) {
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
     const maxX = window.innerWidth - btnWidth - margin;
     const maxY = window.innerHeight - btnHeight - margin;
 
-    // Random position inside viewport
-    const x = Math.random() * maxX;
-    const y = Math.random() * maxY;
+    // Current position
+    const rect = noBtn.getBoundingClientRect();
+    let btnX = rect.left;
+    let btnY = rect.top;
 
-    noBtn.style.position = "fixed";
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
+    // Distance from mouse
+    const dx = btnX + btnWidth/2 - mouseX;
+    const dy = btnY + btnHeight/2 - mouseY;
+    const distance = Math.sqrt(dx*dx + dy*dy);
+
+    const escapeDistance = 100; // distance to start moving
+    if(distance < escapeDistance) {
+        // Move in opposite direction
+        let newX = btnX + (dx/distance) * 150;
+        let newY = btnY + (dy/distance) * 150;
+
+        // Clamp inside viewport
+        newX = Math.min(Math.max(margin, newX), maxX);
+        newY = Math.min(Math.max(margin, newY), maxY);
+
+        noBtn.style.left = newX + "px";
+        noBtn.style.top = newY + "px";
+    }
 }
 
-/* Trigger movement on hover, click, or touch */
-["mouseenter", "mousedown", "touchstart"].forEach(evt => {
-    noBtn.addEventListener(evt, moveNoSafely);
+// Track mouse movement
+document.addEventListener("mousemove", (e) => {
+    moveNoAway(e.clientX, e.clientY);
 });
 
-/* YES button click */
-yesBtn.onclick = () => {
-    window.location.href = "love.html";
-};
+// For touch screens
+document.addEventListener("touchmove", (e) => {
+    const touch = e.touches[0];
+    moveNoAway(touch.clientX, touch.clientY);
+});
 
-/* Floating hearts */
+// Floating hearts
 setInterval(() => {
     const heart = document.createElement("div");
     heart.className = "heart";
