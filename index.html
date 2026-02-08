@@ -64,7 +64,8 @@ h1 {
     display: flex;
     justify-content: center;
     gap: 25px;
-    position: relative;
+    position: relative; /* important for absolute positioning of No button */
+    height: 50px; /* keep some height for movement */
 }
 
 button {
@@ -82,6 +83,8 @@ button {
     color: white;
     box-shadow: 0 0 25px rgba(255,47,104,0.8);
     animation: yesPulse 1.4s infinite;
+    position: relative;
+    z-index: 1;
 }
 
 @keyframes yesPulse {
@@ -94,9 +97,11 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: fixed; /* relative to viewport */
-    transition: left 0.2s ease, top 0.2s ease; /* smooth movement */
-    z-index: 1000;
+    position: absolute; /* absolute inside .buttons */
+    top: 0;
+    left: 0;
+    transition: left 0.2s ease, top 0.2s ease;
+    z-index: 2;
 }
 
 /* Mobile tweak */
@@ -119,59 +124,55 @@ button {
 <script>
 const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
+const btnContainer = document.querySelector(".buttons");
 
-const margin = 10; // safe distance from screen edges
+const margin = 5; // safe space inside container
 
-// Initialize No button at center
-noBtn.style.left = "50%";
-noBtn.style.top = "50%";
-noBtn.style.transform = "translate(-50%, -50%)";
-
-// YES click
+// YES button click
 yesBtn.onclick = () => {
     window.location.href = "love.html";
 };
 
-// Function to move No button away from mouse
+// Function to move No button away from mouse within container
 function moveNoAway(mouseX, mouseY) {
+    const containerRect = btnContainer.getBoundingClientRect();
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
-    const maxX = window.innerWidth - btnWidth - margin;
-    const maxY = window.innerHeight - btnHeight - margin;
+    // Mouse position relative to container
+    const relX = mouseX - containerRect.left;
+    const relY = mouseY - containerRect.top;
 
-    // Current position
-    const rect = noBtn.getBoundingClientRect();
-    let btnX = rect.left;
-    let btnY = rect.top;
+    // Current button position
+    const btnX = noBtn.offsetLeft + btnWidth / 2;
+    const btnY = noBtn.offsetTop + btnHeight / 2;
 
     // Distance from mouse
-    const dx = btnX + btnWidth/2 - mouseX;
-    const dy = btnY + btnHeight/2 - mouseY;
+    const dx = btnX - relX;
+    const dy = btnY - relY;
     const distance = Math.sqrt(dx*dx + dy*dy);
 
-    const escapeDistance = 100; // distance to start moving
+    const escapeDistance = 80; // distance to trigger movement
     if(distance < escapeDistance) {
-        // Move in opposite direction
-        let newX = btnX + (dx/distance) * 150;
-        let newY = btnY + (dy/distance) * 150;
+        let newX = noBtn.offsetLeft + (dx/distance) * 100;
+        let newY = noBtn.offsetTop + (dy/distance) * 50;
 
-        // Clamp inside viewport
-        newX = Math.min(Math.max(margin, newX), maxX);
-        newY = Math.min(Math.max(margin, newY), maxY);
+        // Clamp inside container
+        newX = Math.min(Math.max(margin, newX), containerRect.width - btnWidth - margin);
+        newY = Math.min(Math.max(margin, newY), containerRect.height - btnHeight - margin);
 
         noBtn.style.left = newX + "px";
         noBtn.style.top = newY + "px";
     }
 }
 
-// Track mouse movement
-document.addEventListener("mousemove", (e) => {
+// Mousemove inside container
+btnContainer.addEventListener("mousemove", e => {
     moveNoAway(e.clientX, e.clientY);
 });
 
-// For touch screens
-document.addEventListener("touchmove", (e) => {
+// Touch move support
+btnContainer.addEventListener("touchmove", e => {
     const touch = e.touches[0];
     moveNoAway(touch.clientX, touch.clientY);
 });
