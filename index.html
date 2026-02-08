@@ -63,7 +63,7 @@ h1 {
 .buttons {
     display: flex;
     justify-content: center;
-    gap: 25px;
+    gap: 15px;
     position: relative;
     height: 50px;
 }
@@ -100,7 +100,7 @@ button {
     position: absolute;
     top: 0;
     left: 0;
-    transition: left 0.05s ease, top 0.05s ease; /* very fast */
+    transition: left 0.05s ease, top 0.05s ease; /* fast movement */
 }
 
 /* Mobile tweak */
@@ -134,33 +134,27 @@ yesBtn.onclick = () => {
 
 // Initialize NO button just beside YES
 function initNoBtn() {
-    const yesRect = yesBtn.getBoundingClientRect();
-    const containerRect = btnContainer.getBoundingClientRect();
-
-    // Place NO button slightly right of YES button
     const initialLeft = yesBtn.offsetLeft + yesBtn.offsetWidth + 10;
     const initialTop = yesBtn.offsetTop;
-
     noBtn.style.left = initialLeft + "px";
     noBtn.style.top = initialTop + "px";
 }
 initNoBtn();
 
-// Function to move NO button fast around YES button
+// Function to move NO button around YES fast
 function moveNoAroundYes() {
-    const yesRect = yesBtn.getBoundingClientRect();
     const containerRect = btnContainer.getBoundingClientRect();
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
-    // Random angle to move around YES
+    // Random angle and distance from YES
     const angle = Math.random() * 2 * Math.PI;
-    const distance = 60 + Math.random() * 40; // distance away from YES (60-100px)
+    const distance = 60 + Math.random() * 40; // 60-100px away
 
     let newX = yesBtn.offsetLeft + yesBtn.offsetWidth/2 + Math.cos(angle) * distance - btnWidth/2;
     let newY = yesBtn.offsetTop + yesBtn.offsetHeight/2 + Math.sin(angle) * distance - btnHeight/2;
 
-    // Clamp inside container
+    // Clamp inside container so it doesn't go outside
     newX = Math.min(Math.max(margin, newX), containerRect.width - btnWidth - margin);
     newY = Math.min(Math.max(margin, newY), containerRect.height - btnHeight - margin);
 
@@ -168,7 +162,7 @@ function moveNoAroundYes() {
     noBtn.style.top = newY + "px";
 }
 
-// Event listeners: hover or click triggers movement
+// Hover or click triggers movement
 noBtn.addEventListener("mouseenter", moveNoAroundYes);
 noBtn.addEventListener("click", moveNoAroundYes);
 
