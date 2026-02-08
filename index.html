@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
     height: 100vh;
     font-family: 'Poppins', sans-serif;
@@ -59,10 +60,8 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: absolute; /* absolute to move around YES */
-    top: 0;
-    left: 0;
-    transition: left 0.05s, top 0.05s; /* fast movement */
+    position: absolute; /* absolute to move when hovered */
+    transition: left 0.05s, top 0.05s; /* fast jump */
 }
 </style>
 </head>
@@ -81,31 +80,25 @@ const yesBtn = document.getElementById("yes");
 const noBtn = document.getElementById("no");
 const container = document.querySelector(".buttons");
 
-// Initialize NO button next to YES
+// Initialize NO button just beside YES
 function initNoBtn() {
-    const yesRect = yesBtn.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    const offsetX = yesBtn.offsetWidth + 10; // small gap
+    const offsetX = yesBtn.offsetLeft + yesBtn.offsetWidth + 10; // 10px gap
     noBtn.style.left = offsetX + "px";
     noBtn.style.top = "0px";
 
-    // Match size with YES
+    // Match size to YES button
     noBtn.style.width = yesBtn.offsetWidth + "px";
     noBtn.style.height = yesBtn.offsetHeight + "px";
 }
 initNoBtn();
 
-// Move NO button around YES in a circle when hovered
+// Move NO button around YES button when hovered
 function moveNoAroundYes() {
-    const radius = 80 + Math.random() * 20; // 80-100px distance
+    const radius = 80 + Math.random() * 40; // distance from YES
     const angle = Math.random() * 2 * Math.PI;
 
-    const yesWidth = yesBtn.offsetWidth;
-    const yesHeight = yesBtn.offsetHeight;
-
-    const newX = yesBtn.offsetLeft + yesWidth/2 + Math.cos(angle) * radius - noBtn.offsetWidth/2;
-    const newY = yesBtn.offsetTop + yesHeight/2 + Math.sin(angle) * radius - noBtn.offsetHeight/2;
+    const newX = yesBtn.offsetLeft + yesBtn.offsetWidth/2 + Math.cos(angle) * radius - noBtn.offsetWidth/2;
+    const newY = yesBtn.offsetTop + yesBtn.offsetHeight/2 + Math.sin(angle) * radius - noBtn.offsetHeight/2;
 
     // Clamp inside container
     const maxX = container.offsetWidth - noBtn.offsetWidth;
@@ -121,7 +114,7 @@ noBtn.addEventListener("click", moveNoAroundYes);
 
 // YES button click
 yesBtn.addEventListener("click", () => {
-    alert("You clicked YES! ❤️"); // replace with your love.html if needed
+    alert("You clicked YES! ❤️"); // Replace with love.html if needed
 });
 </script>
 
