@@ -75,6 +75,7 @@ button {
     border: none;
     font-weight: 600;
     cursor: pointer;
+    z-index: 2; /* Always above card background */
 }
 
 /* YES */
@@ -84,7 +85,6 @@ button {
     box-shadow: 0 0 25px rgba(255,47,104,0.8);
     animation: yesPulse 1.4s infinite;
     position: relative;
-    z-index: 1;
 }
 
 @keyframes yesPulse {
@@ -97,7 +97,7 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: relative; /* relative for proper alignment */
+    position: relative;
     transition: left 0.2s ease, top 0.2s ease;
 }
 
@@ -124,19 +124,20 @@ const yesBtn = document.getElementById("yes");
 const btnContainer = document.querySelector(".buttons");
 
 const margin = 5; // safe margin inside container
+const escapeDistance = 80; // distance in px to trigger movement
 
 // YES button click
 yesBtn.onclick = () => {
     window.location.href = "love.html";
 };
 
-// Function to move No button randomly inside container when hovered/clicked
+// Function to move No button randomly inside container
 function moveNoRandomly() {
     const containerRect = btnContainer.getBoundingClientRect();
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
-    // Random new position within container
+    // Random new position
     let newX = Math.random() * (containerRect.width - btnWidth - margin*2);
     let newY = Math.random() * (containerRect.height - btnHeight - margin*2);
 
@@ -145,11 +146,35 @@ function moveNoRandomly() {
     noBtn.style.top = newY + "px";
 }
 
-// Event listeners: hover and click triggers the No button to move
-noBtn.addEventListener("mouseenter", moveNoRandomly);
-noBtn.addEventListener("click", moveNoRandomly);
+// Function to check distance from cursor to No button
+function checkDistance(e) {
+    const rect = noBtn.getBoundingClientRect();
+    const btnX = rect.left + rect.width/2;
+    const btnY = rect.top + rect.height/2;
 
-// Floating hearts
+    const dx = e.clientX - btnX;
+    const dy = e.clientY - btnY;
+    const distance = Math.sqrt(dx*dx + dy*dy);
+
+    if(distance < escapeDistance) {
+        moveNoRandomly();
+    }
+}
+
+// Mouse move over container
+btnContainer.addEventListener("mousemove", checkDistance);
+
+// Touch move support
+btnContainer.addEventListener("touchmove", e => {
+    checkDistance(e.touches[0]);
+});
+
+// Also move on click attempt
+noBtn.addEventListener("click", moveNoRandomly);
+</script>
+
+<!-- Floating hearts -->
+<script>
 setInterval(() => {
     const heart = document.createElement("div");
     heart.className = "heart";
