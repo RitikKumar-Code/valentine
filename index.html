@@ -75,7 +75,7 @@ button {
     border: none;
     font-weight: 600;
     cursor: pointer;
-    z-index: 2; /* Always above card background */
+    z-index: 1;
 }
 
 /* YES */
@@ -97,8 +97,10 @@ button {
 #no {
     background: #f1f1f1;
     color: #555;
-    position: relative;
-    transition: left 0.2s ease, top 0.2s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: left 0.05s ease, top 0.05s ease; /* very fast */
 }
 
 /* Mobile tweak */
@@ -124,57 +126,53 @@ const yesBtn = document.getElementById("yes");
 const btnContainer = document.querySelector(".buttons");
 
 const margin = 5; // safe margin inside container
-const escapeDistance = 80; // distance in px to trigger movement
 
 // YES button click
 yesBtn.onclick = () => {
     window.location.href = "love.html";
 };
 
-// Function to move No button randomly inside container
-function moveNoRandomly() {
+// Initialize NO button just beside YES
+function initNoBtn() {
+    const yesRect = yesBtn.getBoundingClientRect();
+    const containerRect = btnContainer.getBoundingClientRect();
+
+    // Place NO button slightly right of YES button
+    const initialLeft = yesBtn.offsetLeft + yesBtn.offsetWidth + 10;
+    const initialTop = yesBtn.offsetTop;
+
+    noBtn.style.left = initialLeft + "px";
+    noBtn.style.top = initialTop + "px";
+}
+initNoBtn();
+
+// Function to move NO button fast around YES button
+function moveNoAroundYes() {
+    const yesRect = yesBtn.getBoundingClientRect();
     const containerRect = btnContainer.getBoundingClientRect();
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
-    // Random new position
-    let newX = Math.random() * (containerRect.width - btnWidth - margin*2);
-    let newY = Math.random() * (containerRect.height - btnHeight - margin*2);
+    // Random angle to move around YES
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = 60 + Math.random() * 40; // distance away from YES (60-100px)
 
-    noBtn.style.position = "absolute";
+    let newX = yesBtn.offsetLeft + yesBtn.offsetWidth/2 + Math.cos(angle) * distance - btnWidth/2;
+    let newY = yesBtn.offsetTop + yesBtn.offsetHeight/2 + Math.sin(angle) * distance - btnHeight/2;
+
+    // Clamp inside container
+    newX = Math.min(Math.max(margin, newX), containerRect.width - btnWidth - margin);
+    newY = Math.min(Math.max(margin, newY), containerRect.height - btnHeight - margin);
+
     noBtn.style.left = newX + "px";
     noBtn.style.top = newY + "px";
 }
 
-// Function to check distance from cursor to No button
-function checkDistance(e) {
-    const rect = noBtn.getBoundingClientRect();
-    const btnX = rect.left + rect.width/2;
-    const btnY = rect.top + rect.height/2;
+// Event listeners: hover or click triggers movement
+noBtn.addEventListener("mouseenter", moveNoAroundYes);
+noBtn.addEventListener("click", moveNoAroundYes);
 
-    const dx = e.clientX - btnX;
-    const dy = e.clientY - btnY;
-    const distance = Math.sqrt(dx*dx + dy*dy);
-
-    if(distance < escapeDistance) {
-        moveNoRandomly();
-    }
-}
-
-// Mouse move over container
-btnContainer.addEventListener("mousemove", checkDistance);
-
-// Touch move support
-btnContainer.addEventListener("touchmove", e => {
-    checkDistance(e.touches[0]);
-});
-
-// Also move on click attempt
-noBtn.addEventListener("click", moveNoRandomly);
-</script>
-
-<!-- Floating hearts -->
-<script>
+// Floating hearts
 setInterval(() => {
     const heart = document.createElement("div");
     heart.className = "heart";
