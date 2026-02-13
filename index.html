@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Valentine 💖</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
     height: 100vh;
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #ff6a88, #ff99ac);
@@ -16,10 +15,10 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-}
+  }
 
-/* Card */
-.card {
+  /* Card */
+  .card {
     background: white;
     padding: 45px;
     width: min(90%, 420px);
@@ -27,96 +26,220 @@ body {
     text-align: center;
     box-shadow: 0 30px 60px rgba(0,0,0,0.25);
     position: relative;
-}
+  }
 
-/* Buttons container */
-.buttons {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+  .card h1 {
+    font-size: 24px;
+    line-height: 1.3;
+  }
+
+  /* Buttons container */
+  .buttons {
+    position: relative;        /* anchor for absolutely-positioned NO */
+    display: inline-flex;      /* preserves baseline and natural YES layout */
+    gap: 10px;
     margin-top: 30px;
-}
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 64px;          /* keeps a sensible height so NO can move inside */
+  }
 
-/* Button styling */
-button {
+  /* Common button styling */
+  button {
     padding: 14px 38px;
     font-size: 18px;
     border-radius: 16px;
     border: none;
     font-weight: 600;
     cursor: pointer;
-    position: relative;
-}
+    position: relative; /* YES stays in normal flow */
+    user-select: none;
+  }
 
-/* YES button */
-#yes {
+  /* YES button */
+  #yes {
     background: linear-gradient(135deg, #ff2f68, #ff5fa2);
     color: white;
     box-shadow: 0 0 25px rgba(255,47,104,0.8);
-}
+    z-index: 1; /* ensure above in case overlap */
+  }
 
-/* NO button */
-#no {
+  /* NO button (will be absolutely positioned) */
+  #no {
     background: #f1f1f1;
     color: #555;
-    position: absolute; /* absolute to move when hovered */
-    transition: left 0.05s, top 0.05s; /* fast jump */
-}
+    position: absolute; /* moves around within .buttons */
+    left: 0;
+    top: 0;
+    transition: transform 0.08s ease, left 0.06s linear, top 0.06s linear;
+    /* Make it not focusable via keyboard so it can't be "clicked" with Enter/Space */
+    outline: none;
+  }
+
+  /* Optional playful wobble when it escapes */
+  #no.escape {
+    transform: scale(1.02) rotate(-1.5deg);
+  }
 </style>
 </head>
 <body>
 
-<div class="card">
+  <div class="card">
     <h1>Akshi, will you be my Valentine? 💖</h1>
-    <div class="buttons">
-        <button id="yes">YES 💘</button>
-        <button id="no">NO 🙈</button>
+
+    <div class="buttons" id="buttons">
+      <button id="yes" type="button">YES 💘</button>
+      <button id="no"  type="button" aria-disabled="true" tabindex="-1">NO 🙈</button>
     </div>
-</div>
+  </div>
 
 <script>
-const yesBtn = document.getElementById("yes");
-const noBtn = document.getElementById("no");
-const container = document.querySelector(".buttons");
+  const yesBtn = document.getElementById('yes');
+  const noBtn  = document.getElementById('no');
+  const wrap   = document.getElementById('buttons');
 
-// Initialize NO button just beside YES
-function initNoBtn() {
-    const offsetX = yesBtn.offsetLeft + yesBtn.offsetWidth + 10; // 10px gap
-    noBtn.style.left = offsetX + "px";
-    noBtn.style.top = "0px";
+  /**
+   * Ensure NO matches YES size and initial alignment (same baseline and just to the right).
+   * We compute after fonts load and on resize.
+   */
+  function alignNoBesideYes() {
+    // Reset any transforms for accurate measurements
+    noBtn.classList.remove('escape');
+    noBtn.style.transform = 'none';
 
-    // Match size to YES button
-    noBtn.style.width = yesBtn.offsetWidth + "px";
-    noBtn.style.height = yesBtn.offsetHeight + "px";
-}
-initNoBtn();
+    // Make NO the same size as YES
+    const yesRect = yesBtn.getBoundingClientRect();
 
-// Move NO button around YES button when hovered
-function moveNoAroundYes() {
-    const radius = 80 + Math.random() * 40; // distance from YES
-    const angle = Math.random() * 2 * Math.PI;
+    // Use precise pixel sizes to match
+    const yesStyles = window.getComputedStyle(yesBtn);
+    noBtn.style.padding = yesStyles.padding;
+    noBtn.style.fontSize = yesStyles.fontSize;
+    noBtn.style.borderRadius = yesStyles.borderRadius;
 
-    const newX = yesBtn.offsetLeft + yesBtn.offsetWidth/2 + Math.cos(angle) * radius - noBtn.offsetWidth/2;
-    const newY = yesBtn.offsetTop + yesBtn.offsetHeight/2 + Math.sin(angle) * radius - noBtn.offsetHeight/2;
+    // Explicit width/height to lock match (after layout)
+    const yesW = yesRect.width;
+    const yesH = yesRect.height;
+    noBtn.style.width  = `${yesW}px`;
+    noBtn.style.height = `${yesH}px`;
 
-    // Clamp inside container
-    const maxX = container.offsetWidth - noBtn.offsetWidth;
-    const maxY = container.offsetHeight - noBtn.offsetHeight;
+    // Position NO just to the right of YES with a 10px gap, inside the wrapper
+    const wrapRect = wrap.getBoundingClientRect();
+    const yesRect2 = yesBtn.getBoundingClientRect(); // refresh in case sizes changed
 
-    noBtn.style.left = Math.min(Math.max(newX, 0), maxX) + "px";
-    noBtn.style.top = Math.min(Math.max(newY, 0), maxY) + "px";
-}
+    const left = yesRect2.left - wrapRect.left + yesRect2.width + 10;
+    const top  = yesRect2.top  - wrapRect.top; // align top/baseline visually
 
-// Trigger on hover or click
-noBtn.addEventListener("mouseenter", moveNoAroundYes);
-noBtn.addEventListener("click", moveNoAroundYes);
+    noBtn.style.left = `${left}px`;
+    noBtn.style.top  = `${top}px`;
+  }
 
-// YES button click redirects to love.html
-yesBtn.addEventListener("click", () => {
-    window.location.href = "love.html";
-});
+  // Move NO to a random position around YES, staying within the wrapper bounds
+  function moveNoAway() {
+    const wrapRect = wrap.getBoundingClientRect();
+    const yesRect  = yesBtn.getBoundingClientRect();
+    const noRect   = noBtn.getBoundingClientRect();
+
+    // Random polar move around YES
+    const minRadius = Math.max(80, yesRect.width * 0.8);
+    const maxRadius = minRadius + 80;
+    const radius = minRadius + Math.random() * (maxRadius - minRadius);
+    const angle = Math.random() * Math.PI * 2;
+
+    const targetCenterX = yesRect.left + yesRect.width / 2 + Math.cos(angle) * radius;
+    const targetCenterY = yesRect.top  + yesRect.height/ 2 + Math.sin(angle) * radius;
+
+    let newLeft = targetCenterX - wrapRect.left - noRect.width / 2;
+    let newTop  = targetCenterY - wrapRect.top  - noRect.height/ 2;
+
+    // Clamp inside the wrapper
+    const maxLeft = wrap.clientWidth  - noRect.width;
+    const maxTop  = wrap.clientHeight - noRect.height;
+    newLeft = Math.min(Math.max(newLeft, 0), Math.max(0, maxLeft));
+    newTop  = Math.min(Math.max(newTop,  0), Math.max(0, maxTop));
+
+    noBtn.classList.add('escape');
+    noBtn.style.left = `${newLeft}px`;
+    noBtn.style.top  = `${newTop}px`;
+
+    // Briefly keep the class for animation flavor
+    clearTimeout(moveNoAway._t);
+    moveNoAway._t = setTimeout(() => noBtn.classList.remove('escape'), 150);
+  }
+
+  // Prevent any possible NO "click" by intercepting early and moving immediately
+  function blockNoClick(e) {
+    // Capture phase prevents default click and moves the button before it can be activated
+    e.preventDefault();
+    e.stopPropagation();
+    moveNoAway();
+  }
+
+  // Also move when the pointer gets very close to NO (proximity)
+  function onProximityMove(e) {
+    const pointerX = e.clientX ?? (e.touches && e.touches[0]?.clientX);
+    const pointerY = e.clientY ?? (e.touches && e.touches[0]?.clientY);
+    if (pointerX == null || pointerY == null) return;
+
+    const noRect = noBtn.getBoundingClientRect();
+    const padding = 18; // proximity threshold in px around NO
+
+    const near =
+      pointerX > noRect.left - padding &&
+      pointerX < noRect.right + padding &&
+      pointerY > noRect.top - padding &&
+      pointerY < noRect.bottom + padding;
+
+    if (near) moveNoAway();
+  }
+
+  /** Init after fonts/layout */
+  function init() {
+    alignNoBesideYes();
+
+    // Keep alignment on resize
+    window.addEventListener('resize', alignNoBesideYes);
+
+    // Keep alignment if YES changes size (e.g., font load or style)
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(alignNoBesideYes);
+      ro.observe(yesBtn);
+    } else {
+      // fallback periodic check
+      setTimeout(alignNoBesideYes, 300);
+    }
+
+    // Interactions to make NO impossible to click
+    // Use capture to preempt default click activation
+    noBtn.addEventListener('mousedown', blockNoClick, true);
+    noBtn.addEventListener('mouseup',   blockNoClick, true);
+    noBtn.addEventListener('click',     blockNoClick, true);
+    noBtn.addEventListener('touchstart', blockNoClick, { passive: false, capture: true });
+    noBtn.addEventListener('touchend',   blockNoClick, { passive: false, capture: true });
+
+    // Hover / enter triggers
+    noBtn.addEventListener('mouseenter', moveNoAway);
+    noBtn.addEventListener('mouseover',  moveNoAway);
+    noBtn.addEventListener('focus',      moveNoAway); // in case focus ever occurs
+
+    // Proximity within the container (mouse & touch)
+    wrap.addEventListener('mousemove', onProximityMove);
+    wrap.addEventListener('touchmove', onProximityMove, { passive: true });
+
+    // YES behavior
+    yesBtn.addEventListener('click', () => {
+      window.location.href = 'love.html';
+    });
+  }
+
+  // Wait for fonts to render to get precise metrics
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(init);
+  } else {
+    window.addEventListener('load', init);
+  }
 </script>
 
 </body>
 </html>
+``
